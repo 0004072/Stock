@@ -24,7 +24,9 @@ public class ShoppingCart {
      * @param item PurchasedItem to be present in the cart.
      */
     public void addToCart(PurchasedItem item){
+        System.out.println(cart.contains(item));
         if(cart.contains(item)){
+            System.out.println("Item already exists!");
             cart.remove(item);
             item.setQty(item.getQty()*2);
             cart.add(item);
@@ -47,28 +49,86 @@ public class ShoppingCart {
      * @param keyboard a BufferedReader instance to handle the user inout capturing.
      * @throws IOException in case of an IOException is occurred.
      */
-    public void generateBill(BufferedReader keyboard) throws IOException{
-        System.out.println("~Food City~\nOn your way home...");
-        System.out.println("No. 221B, Baker Street, London.");
-        System.out.println(" # " + String.format("%1$-"+20+"s", "Name") + String.format("%1$-"+12+"s", "Unit Price") + String.format("%1$-"+7+"s", "Qty.") + String.format("%1$-"+12+"s", "Price"));
+    public boolean generateBill(BufferedReader keyboard) throws IOException{
+        boolean success = false;
+        StringBuilder bill = new StringBuilder();
+        bill.append("~Food City~\nOn your way home...");
+        bill.append("\nNo. 221B, Baker Street, London.");
+        bill.append("\n===RECEIPT===\n");
+        bill.append("\n # " + String.format("%1$-"+20+"s", "Name") + String.format("%1$-"+12+"s", "Unit Price") + String.format("%1$-"+7+"s", "Qty.") + String.format("%1$-"+12+"s", "Price"));
         int i = 1;
         Float total = 0.0f;
         for(PurchasedItem itm : cart){
             String name = itm.getItem().getName();
             String unitPrice = ((Float)itm.getItem().getUnitPrice()).toString().replace('f', '0');
             String qty = ((Float)itm.getQty()).toString().replace('f', '0');
-            String unit = itm.getItem().getUnit();
+            String unit = itm.getItem().getUnit().getUnitName();
             Float price = itm.getItem().getUnitPrice() * itm.getQty();
             total += price;
-            String billPrice = (price).toString().replace('f', '0');
-            System.out.println(String.format("%1$"+3+"s", (i + " ")) + String.format("%1$-"+20+"s", name) + String.format("%1$"+12+"s", unitPrice) + String.format("%1$"+7+"s", (qty+""+unit)) + String.format("%1$"+12+"s", billPrice));
+            String billPrice = (price).toString();
+            bill.append("\n" + String.format("%1$"+3+"s", (i + " ")) + String.format("%1$-"+20+"s", name) + String.format("%1$"+12+"s", unitPrice) + String.format("%1$"+7+"s", (qty+""+unit)) + String.format("%1$"+12+"s", billPrice));
             i++;
         }
 
+        //Rounding of total
+        float cents = total % 1;
+
+        if(cents > 0.5f)
+            total = total - cents + 1;
+
+        else if(cents < 0.5f)
+            total -= cents;
+
         String displayTot = String.format("%1$"+12+"s", total);
         displayTot = "Sub Total :" + displayTot;
-        System.out.println(String.format("%1$"+54+"s", displayTot));
+        bill.append("\n" + String.format("%1$"+54+"s", displayTot));
         while(true){
+            System.out.println("Total : "+total);
+            discounts:
+            while(true){
+                System.out.print("Discounts/Taxes?(y/n)");
+                System.out.flush();
+                String choice = keyboard.readLine();
+                switch(choice){
+                    case "y":
+                        discountamount:
+                        while(true){
+                            System.out.print("Discount/tax rate(discount rate < 0 && taxt rate > 0):");
+                            System.out.flush();
+                            String rate = keyboard.readLine();
+                            if(rate.matches("(-)?[01](\\.[\\d])?")){
+                                float discountedTotal = discount(total, Float.parseFloat(rate));
+                                if(discountedTotal == total){
+                                    System.out.print("No discounts/taxes added! Retry?(y/n)");
+                                    System.out.flush();
+                                    String continueDiscount = keyboard.readLine();
+                                    switch(continueDiscount) {
+                                        case "y":
+                                            continue discountamount;
+                                            
+                                        case "n":
+                                            break discounts;
+                                        
+                                        default:
+                                            System.out.println("Invalid choice! Assumed NO!");
+                                            // TODO: 10/19/16 Start over from here! 
+                                    }
+                                    
+                                }
+                                break;
+                            }
+                            else
+                                System.out.println("Invalid discount rate! Try again!");
+                        }
+                        break;
+
+                    case "n":
+                        break discounts;
+
+                    default:
+                        System.out.println("Invalid choice.");
+                }
+            }
             System.out.print("Cash?");
             System.out.flush();
             // TODO: 10/18/16 Input should be validated! 
@@ -78,9 +138,14 @@ public class ShoppingCart {
                 continue;
             }
                 float change = cash - total;
-            System.out.println("Change:" + change);
+            bill.append("\nCash: " + cash);
+            bill.append("\nChange: " + change);
             countChange(change);
+            System.out.println(bill.toString());
+            success = true;
+            break;
         }
+        return success;
     }
 
     /**
@@ -105,5 +170,14 @@ public class ShoppingCart {
             System.out.println(String.format("%1$"+6+"s", notes[i]) + " X " + String.format("%1$"+2+"s",count[i]));
         }
         return count;
+    }
+
+    public float discount(float amount, float rate){
+        if(rate < -1.0f || rate > 1.0f){
+            System.out.println("Invalid discount rate! Should be between -1.0 and +1.0");
+            return amount;
+        }
+        amount += (amount * rate);
+        return amount;
     }
 }

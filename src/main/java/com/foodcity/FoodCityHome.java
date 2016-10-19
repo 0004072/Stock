@@ -8,7 +8,7 @@ import java.util.*;
  * Created by 000407 on 10/17/16.
  */
 public class FoodCityHome {
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) throws IOException, InvalidUnitException{
         BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
         Stock stock = new Stock();
 
@@ -20,7 +20,7 @@ public class FoodCityHome {
         stock.addItem(new StockItem("I00004", "Soap", "", 65.0f), 100.0f);
         stock.addItem(new StockItem("I00005", "Tooth Paste (75g)", "", 67.5f), 100.0f);
         stock.addItem(new StockItem("I00006", "Tea Leaves (100g)", "", 120.0f), 100.0f);
-        stock.addItem(new StockItem("I00007", "Jam (200g)", "", 230.0f), 50.0f);
+        stock.addItem(new StockItem("I00007", "Jam (200g)", "", 230.75f), 50.0f);
         stock.addItem(new StockItem("I00008", "Laundry Soap", "", 55.0f), 100.0f);
         stock.addItem(new StockItem("I00009", "Curry Powder (100g)", "", 120.0f), 50.0f);
         stock.addItem(new StockItem("I00010", "Chillie Powder (100g)", "", 110.0f), 50.0f);
@@ -82,11 +82,11 @@ public class FoodCityHome {
                             System.out.println("Invalid ID!");
 
                         else {
-                            System.out.println(item.getName() + " : " + item.getUnitPrice() + " per " + (item.getUnit().equals("") ? "unit" : item.getUnit()) + ". " + stock.getCurrentStockLevel(id) + " in stock.");
+                            System.out.println(item.getName() + " : " + item.getUnitPrice() + " per " + (item.getUnit().getUnitName().equals("") ? "unit" : item.getUnit().getUnitName()) + ". " + stock.getCurrentStockLevel(id) + " in stock.");
                             System.out.print("Quantity:");
                             System.out.flush();
                             float qty = Float.parseFloat(keyboard.readLine());//Should be refactored to implement validations
-                            System.out.println(item.getName() + " : " + item.getUnitPrice() + "X" + qty + item.getUnit());
+                            System.out.println(item.getName() + " : " + item.getUnitPrice() + "X" + qty + item.getUnit().getUnitName());
                             try {
                                 PurchasedItem pi = stock.buyItem(id, qty);
                                 sc.addToCart(pi);
@@ -108,6 +108,9 @@ public class FoodCityHome {
                                     else {
                                         System.out.println("Item was not added to the cart!");
                                     }
+                                }
+                                else if(e instanceof InvalidUnitException){
+                                    System.out.println("Item was not added to the cart!");
                                 }
                             }
                         }
@@ -137,8 +140,10 @@ public class FoodCityHome {
                     ShoppingCart scp = shoppingCarts.get(lblp);
                     if(scp == null)
                         System.out.println("No shopping cart found!");
-                    else
-                        scp.generateBill(keyboard);
+                    else {
+                        if(scp.generateBill(keyboard))
+                            shoppingCarts.remove(scp);
+                    }
                     break;
 
                 case "exit":

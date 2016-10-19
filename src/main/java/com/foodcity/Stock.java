@@ -9,6 +9,7 @@ import java.util.*;
  * Class that implements the structure of the stock.
  * Created by 000407 on 10/17/2016.
  */
+
 public class Stock
 {
     private Map<String, Map<StockItem, Float>> stock = new HashMap<>();
@@ -91,11 +92,13 @@ public class Stock
      * @throws ZeroStockLevelException if the requested StockItem is out of stock.
      * @throws InsufficientQuantityException if the requested quantity is lesser than the available quantity.
      */
-    public PurchasedItem buyItem(String id, float qty) throws ZeroStockLevelException, InsufficientQuantityException{
+    public PurchasedItem buyItem(String id, float qty) throws ZeroStockLevelException, InsufficientQuantityException, InvalidUnitException{
         Map.Entry<StockItem, Float> stockItem = getStockItem(id);
         StockItem currentItem = stockItem.getKey();
         float currentLevel = stockItem.getValue();
-
+        Unit unit = currentItem.getUnit();
+        if((qty % unit.getMinValue()) != 0)
+            throw new InvalidUnitException(qty, unit.getMinValue(), unit.getUnitName());
         if(currentLevel == 0.0f)
             throw new ZeroStockLevelException();
 
