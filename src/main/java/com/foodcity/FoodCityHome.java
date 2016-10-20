@@ -10,20 +10,20 @@ import java.util.*;
 public class FoodCityHome {
     public static void main(String[] args) throws IOException, InvalidUnitException{
         BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
-        Stock stock = new Stock();
+        Stock stock = new Stock(keyboard);
 
         Map<String, ShoppingCart> shoppingCarts = new HashMap<>();
 
-        stock.addItem(new StockItem("I00001", "Wheat Flour", "kg", 55.0f), 100.0f);
-        stock.addItem(new StockItem("I00002", "Sugar", "kg", 45.0f), 100.0f);
-        stock.addItem(new StockItem("I00003", "Milk Powder(400g)", "", 395.0f), 50.0f);
-        stock.addItem(new StockItem("I00004", "Soap", "", 65.0f), 100.0f);
-        stock.addItem(new StockItem("I00005", "Tooth Paste (75g)", "", 67.5f), 100.0f);
-        stock.addItem(new StockItem("I00006", "Tea Leaves (100g)", "", 120.0f), 100.0f);
-        stock.addItem(new StockItem("I00007", "Jam (200g)", "", 230.75f), 50.0f);
-        stock.addItem(new StockItem("I00008", "Laundry Soap", "", 55.0f), 100.0f);
-        stock.addItem(new StockItem("I00009", "Curry Powder (100g)", "", 120.0f), 50.0f);
-        stock.addItem(new StockItem("I00010", "Chillie Powder (100g)", "", 110.0f), 50.0f);
+        stock.addItem(new StockItem("Wheat Flour", "kg", 55.0f), 100.0f);
+        stock.addItem(new StockItem("Sugar", "kg", 45.0f), 100.0f);
+        stock.addItem(new StockItem("Milk Powder(400g)", "", 395.0f), 50.0f);
+        stock.addItem(new StockItem("Soap", "", 65.0f), 100.0f);
+        stock.addItem(new StockItem("Tooth Paste (75g)", "", 67.5f), 100.0f);
+        stock.addItem(new StockItem("Tea Leaves (100g)", "", 120.0f), 100.0f);
+        stock.addItem(new StockItem("Jam (200g)", "", 230.75f), 50.0f);
+        stock.addItem(new StockItem("Laundry Soap", "", 55.0f), 100.0f);
+        stock.addItem(new StockItem("Curry Powder (100g)", "", 120.0f), 50.0f);
+        stock.addItem(new StockItem("Chillie Powder (100g)", "", 110.0f), 50.0f);
 
         System.out.println("FoodCity :: Point of Sale");
         System.out.println("V1.0");
@@ -35,11 +35,7 @@ public class FoodCityHome {
             System.out.flush();
             cmd = keyboard.readLine();
             switch(cmd){
-                case "addstock":
-                    System.out.print("Item ID:");
-                    System.out.flush();
-                    String newItemId = keyboard.readLine();
-
+                case "newstock":
                     System.out.print("Item Name:");
                     System.out.flush();
                     String newItemName = keyboard.readLine();
@@ -48,20 +44,63 @@ public class FoodCityHome {
                     System.out.flush();
                     Float newItemUnitPrice = Float.parseFloat(keyboard.readLine());
 
-                    System.out.print("Unit:");
+                    System.out.print("Unit measured in:");
                     System.out.flush();
                     String newItemUnit = keyboard.readLine();
 
-                    System.out.print("Item Qty:");
+                    System.out.print("Stock Qty:");
                     System.out.flush();
                     Float newItemQty = Float.parseFloat(keyboard.readLine());
 
-                    StockItem newItem = new StockItem(newItemId, newItemName, newItemUnit, newItemUnitPrice);
+                    StockItem newItem = new StockItem(newItemName, newItemUnit, newItemUnitPrice);
                     stock.addItem(newItem, newItemQty, keyboard);
+                    break;
+
+                case "topup":
+                    topup:
+                    while(true){
+                        System.out.print("Item ID:");
+                        System.out.flush();
+                        String itemId = keyboard.readLine().toUpperCase();
+                        StockItem item = stock.getItem(itemId);
+                        if(item == null){
+                            System.out.print("Invalid ID! Retry?(y/n)");
+                            System.out.flush();
+                            String retryConsent = keyboard.readLine();
+                            switch(retryConsent){
+                                case "y":
+                                    continue topup;
+
+                                case "n":
+                                    break topup;
+
+                                default:
+                                    System.out.println("Invalid choice! Assumed YES!");
+                                    continue topup;
+                            }
+                        }
+                        System.out.println(item.getId()+" "+item.getName());
+                        while(true){
+                            System.out.print("Quantity to add:");
+                            System.out.flush();
+                            String addQty = keyboard.readLine();
+                            if(addQty.matches("[\\d]+(\\.[\\d]+)?")){
+                                stock.updateStockLevel(item, Float.parseFloat(addQty));
+                                break topup;
+                            }
+                            else{
+                                System.out.println("Invalid quantity! Please retry...");
+                            }
+                        }
+                    }
                     break;
 
                 case "showstock":
                     stock.viewCurrentStock();
+                    break;
+
+                case "showcart":
+
                     break;
 
                 case "buy":
@@ -86,7 +125,7 @@ public class FoodCityHome {
                             System.out.print("Quantity:");
                             System.out.flush();
                             float qty = Float.parseFloat(keyboard.readLine());//Should be refactored to implement validations
-                            System.out.println(item.getName() + " : " + item.getUnitPrice() + "X" + qty + item.getUnit().getUnitName());
+                            System.out.println(item.getName() + " : " + item.getUnitPrice() + " X " + qty + item.getUnit().getUnitName());
                             try {
                                 PurchasedItem pi = stock.buyItem(id, qty);
                                 sc.addToCart(pi);

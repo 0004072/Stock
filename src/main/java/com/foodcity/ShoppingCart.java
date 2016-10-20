@@ -24,11 +24,18 @@ public class ShoppingCart {
      * @param item PurchasedItem to be present in the cart.
      */
     public void addToCart(PurchasedItem item){
-        if(cart.contains(item)){
-            System.out.println("Item already exists!");
-            cart.remove(item);
-            item.setQty(item.getQty()*2);
-            cart.add(item);
+        boolean itemAlreadyContains = false;
+        Iterator<PurchasedItem> cartContent = this.cart.iterator();
+        PurchasedItem pi = null;
+        while(cartContent.hasNext()){
+            pi = cartContent.next();
+            if(pi.getItem().getId().equals(item.getItem().getId())){
+                itemAlreadyContains = true;
+                break;
+            }
+        }
+        if(itemAlreadyContains){
+            pi.setQty(pi.getQty() + item.getQty());
         }
         else
             cart.add(item);
@@ -80,7 +87,7 @@ public class ShoppingCart {
 
         String displayTot = String.format("%1$"+12+"s", String.format("%.2f", total));
         displayTot = "Sub Total :" + displayTot;
-        bill.append("\n").append(String.format("%1$" + 64 + "s", displayTot));
+        bill.append("\n\n").append(String.format("%1$" + 64 + "s", displayTot));
         while(true){
             System.out.println(String.format("Total : %.2f", total));
             discounts:
@@ -131,11 +138,17 @@ public class ShoppingCart {
                 }
             }
             float cash, change;
+
             while(true){
                 System.out.print("Cash?");
                 System.out.flush();
                 // TODO: 10/18/16 Input should be validated!
-                cash = Float.parseFloat(keyboard.readLine());
+                String cashInput = keyboard.readLine();
+                if(!cashInput.matches("[\\d]+(\\.[\\d]{1,2})?")){
+                    System.out.println("Invalid input! Check your input...");
+                    continue;
+                }
+                cash = Float.parseFloat(cashInput);
                 if(cash < total){
                     System.out.println("Insufficient funds! You need to pay "+total+"LKR in cash!");
                     continue;
@@ -178,6 +191,12 @@ public class ShoppingCart {
         return count;
     }
 
+    /**
+     * Calculates the discount/taxation amount for a given total, at a given rate.
+     * @param amount Amount that the discount/taxation should be accounted as a float value
+     * @param rate Rate that the discount/taxation should be calculated at, as a float value within the range -1.0 and +1.0 inclusive.
+     * @return the discounted amount as a float if the discount rate is valid, initial amount otherwise.
+     */
     public float discount(float amount, float rate){
         if(rate < -1.0f || rate > 1.0f){
             System.out.println("Invalid discount rate! Should be between -1.0 and +1.0");

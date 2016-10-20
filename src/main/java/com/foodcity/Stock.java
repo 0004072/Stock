@@ -2,7 +2,7 @@ package com.foodcity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -14,8 +14,12 @@ public class Stock
 {
     private Map<String, Map<StockItem, Float>> stock;
     private int nextId;
+    private String prefix;
 
-    public Stock(){
+    public Stock(BufferedReader keyboard) throws IOException{
+        System.out.print("Enter the prefix for the item IDs:");
+        System.out.flush();
+        this.prefix = keyboard.readLine().toUpperCase();
         this.stock = new HashMap<>();
         this.nextId = 1;
     }
@@ -38,6 +42,11 @@ public class Stock
      * @param qty Quantity of the stock item
      */
     void addItem(StockItem item, float qty){
+        DecimalFormat idFormat = new DecimalFormat("00000");
+        StringBuffer itemId = new StringBuffer(this.prefix);
+        itemId.append(idFormat.format(this.nextId));
+        this.nextId++;
+        item.setId(itemId.toString());
         Map<StockItem, Float> obj = new HashMap<>();
         obj.put(item, qty);
         this.stock.putIfAbsent(item.getId(), obj);
@@ -50,15 +59,26 @@ public class Stock
      * @param keyboard java.io.BufferedReader instance that handles capturing user inputs.
      */
     void addItem(StockItem item, float qty, BufferedReader keyboard){
-        Map<StockItem, Float> itemQuantity = new HashMap<>();
-        boolean itemAlreadyExists = this.stock.containsKey(item.getId());
+        StockItem existingItem = null;
+        Float existingQty = null;
+        Map.Entry existingEntry = null;
+        Map<StockItem, Float> newEntry = new HashMap<>();
+        Iterator<Map<StockItem, Float>> stockIterator = stock.values().iterator();
+        boolean itemAlreadyExists = false;
+        while(stockIterator.hasNext()){
+            existingEntry = stockIterator.next().entrySet().iterator().next();
+            existingItem = (StockItem)existingEntry.getKey();
+            existingQty = (Float)existingEntry.getValue();
+            if(existingItem.getName().equals(item.getName())){
+                itemAlreadyExists = true;
+                break;
+            }
+        }
+
         if(itemAlreadyExists){
+            System.out.println(existingItem.getId());
             System.out.println("Item already exists!");
-            Map.Entry existingEntry = (Map.Entry)this.stock.get(item.getId()).entrySet().iterator().next();
-            StockItem existingItem = (StockItem)existingEntry.getKey();
-            Float existingQty = (Float)existingEntry.getValue();
             System.out.println(String.format("%1$-"+20+"s", "Existing")+" "+String.format("%1$-"+20+"s", "New"));
-            System.out.println(String.format("%1$-"+20+"s", existingItem.getId())+" "+String.format("%1$-"+20+"s", item.getId()));
             System.out.println(String.format("%1$-"+20+"s", existingItem.getName())+" "+String.format("%1$-"+20+"s", item.getName()));
             System.out.println(String.format("%1$-"+20+"s", existingItem.getUnitPrice())+" "+String.format("%1$-"+20+"s", item.getUnitPrice()));
             System.out.println(String.format("%1$-"+20+"s", existingQty)+" "+String.format("%1$-"+20+"s", qty));
@@ -67,26 +87,34 @@ public class Stock
             try {
                 String res = keyboard.readLine();
                 if(res.equals("y")){
-                    itemQuantity.put(item, qty);
-                    this.stock.put(item.getId(), itemQuantity);
+                    newEntry.put(item, qty);
+                    this.stock.put(existingItem.getId(), newEntry);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         else
-            this.stock.putIfAbsent(item.getId(), itemQuantity);
+            this.stock.putIfAbsent(item.getId(), newEntry);
     }
 
     StockItem getItem(String id){
-        StockItem item = getStockItem(id).getKey();
+        Map.Entry<StockItem, Float> stockItem = getStockItem(id);
+
+        if(stockItem == null)
+            return null;
+
+        StockItem item = stockItem.getKey();
+
         return item;
     }
 
     private Map.Entry<StockItem, Float> getStockItem(String id){
         Map<StockItem, Float> entry = this.stock.get(id);
-        Map.Entry<StockItem, Float> stockItem = entry.entrySet().iterator().next();
-        return stockItem;
+        if(entry == null)
+            return null;
+
+        return entry.entrySet().iterator().next();
     }
 
     /**
@@ -128,13 +156,26 @@ public class Stock
      * Displays the existing stock status in a formatted, human readable manner.
      */
     public void viewCurrentStock(){
-        Iterator<Map<StockItem, Float>> it = stock.values().iterator();
-        while(it.hasNext()){
-            Map<StockItem, Float> itemEntry = it.next();
+        for (Map<StockItem, Float> itemEntry : stock.values()) {
             Map.Entry<StockItem, Float> item = itemEntry.entrySet().iterator().next();
             StockItem itemData = item.getKey();
             // TODO: 10/18/16 Format this output to be a little more pleasant! :P 
-            System.out.println(itemData.getId()+" "+itemData.getName()+" "+itemData.getUnitPrice()+" "+item.getValue());
+            System.out.println(itemData.getId() + " " + itemData.getName() + " " + itemData.getUnitPrice() + " " + item.getValue());
         }
+    }
+
+    /**
+     * Tops up the stock level by the specified amount. Then generates the report for stock update operation.
+     * @param item StockItem instance that needs to be topped up.
+     * @param qty Quantity that the selected StockItem needs to be topped up by.
+     */
+    public void updateStockLevel(StockItem item, float qty){
+        Map.Entry<StockItem, Float> stockItem = this.stock.get(item.getId()).entrySet().iterator().next();
+        StringBuffer message = new StringBuffer();
+        message.append(stockItem.getKey().toString());
+        message.append(stockItem.getValue()+" => ");
+        stockItem.setValue(qty + stockItem.getValue());
+        message.append(stockItem.getValue());
+        System.out.println(message.toString());
     }
 }
