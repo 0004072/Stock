@@ -24,7 +24,6 @@ public class ShoppingCart {
      * @param item PurchasedItem to be present in the cart.
      */
     public void addToCart(PurchasedItem item){
-        System.out.println(cart.contains(item));
         if(cart.contains(item)){
             System.out.println("Item already exists!");
             cart.remove(item);
@@ -55,18 +54,18 @@ public class ShoppingCart {
         bill.append("~Food City~\nOn your way home...");
         bill.append("\nNo. 221B, Baker Street, London.");
         bill.append("\n===RECEIPT===\n");
-        bill.append("\n # " + String.format("%1$-"+20+"s", "Name") + String.format("%1$-"+12+"s", "Unit Price") + String.format("%1$-"+7+"s", "Qty.") + String.format("%1$-"+12+"s", "Price"));
+        bill.append("\n # ").append(String.format("%1$-" + 30 + "s", "Name")).append(String.format("%1$-" + 12 + "s", "Unit Price")).append(String.format("%1$-" + 7 + "s", "Qty.")).append(String.format("%1$-" + 12 + "s", "Price"));
         int i = 1;
         Float total = 0.0f;
         for(PurchasedItem itm : cart){
             String name = itm.getItem().getName();
-            String unitPrice = ((Float)itm.getItem().getUnitPrice()).toString().replace('f', '0');
-            String qty = ((Float)itm.getQty()).toString().replace('f', '0');
+            String unitPrice = String.format("%.2f", itm.getItem().getUnitPrice());
+            String qty = String.format("%.2f", itm.getQty());
             String unit = itm.getItem().getUnit().getUnitName();
-            Float price = itm.getItem().getUnitPrice() * itm.getQty();
+            float price = itm.getItem().getUnitPrice() * itm.getQty();
             total += price;
-            String billPrice = (price).toString();
-            bill.append("\n" + String.format("%1$"+3+"s", (i + " ")) + String.format("%1$-"+20+"s", name) + String.format("%1$"+12+"s", unitPrice) + String.format("%1$"+7+"s", (qty+""+unit)) + String.format("%1$"+12+"s", billPrice));
+            String billPrice = String.format("%.2f", price);
+            bill.append("\n").append(String.format("%1$" + 3 + "s", (i + " "))).append(String.format("%1$-" + 30 + "s", name)).append(String.format("%1$" + 12 + "s", unitPrice)).append(String.format("%1$" + 7 + "s", (qty + "" + unit))).append(String.format("%1$" + 12 + "s", billPrice));
             i++;
         }
 
@@ -79,11 +78,11 @@ public class ShoppingCart {
         else if(cents < 0.5f)
             total -= cents;
 
-        String displayTot = String.format("%1$"+12+"s", total);
+        String displayTot = String.format("%1$"+12+"s", String.format("%.2f", total));
         displayTot = "Sub Total :" + displayTot;
-        bill.append("\n" + String.format("%1$"+54+"s", displayTot));
+        bill.append("\n").append(String.format("%1$" + 64 + "s", displayTot));
         while(true){
-            System.out.println("Total : "+total);
+            System.out.println(String.format("Total : %.2f", total));
             discounts:
             while(true){
                 System.out.print("Discounts/Taxes?(y/n)");
@@ -91,37 +90,39 @@ public class ShoppingCart {
                 String choice = keyboard.readLine();
                 switch(choice){
                     case "y":
-                        discountamount:
+                        discountAmount:
                         while(true){
-                            System.out.print("Discount/tax rate(discount rate < 0 && taxt rate > 0):");
+                            System.out.print("Discount/tax rate(discount rate < 0 && tax rate > 0):");
                             System.out.flush();
                             String rate = keyboard.readLine();
                             if(rate.matches("(-)?[01](\\.[\\d])?")){
-                                float discountedTotal = discount(total, Float.parseFloat(rate));
-                                if(discountedTotal == total){
-                                    System.out.print("No discounts/taxes added! Retry?(y/n)");
+                                while(true) {
+                                    float rateAsFloat = Float.parseFloat(rate);
+                                    float discountedTotal = discount(total, rateAsFloat);
+                                    System.out.print(String.format("Current total is %.2f. Discounted/taxed total will be %.2f. Confirm?(y)es | (n)o | (c)ancel)", total, discountedTotal));
                                     System.out.flush();
-                                    String continueDiscount = keyboard.readLine();
-                                    switch(continueDiscount) {
+                                    String confirmDiscount = keyboard.readLine();
+                                    switch (confirmDiscount) {
                                         case "y":
-                                            continue discountamount;
-                                            
-                                        case "n":
+                                            total = discountedTotal;
+                                            bill.append("\n").append(String.format("%1$" + 64 + "s", String.format("Discount/Tax Rate :%s", String.format("%1$" + 12 + "s", String.format("%.0f%%", (rateAsFloat * 100))))));
+                                            bill.append("\n").append(String.format("%1$" + 64 + "s", String.format("Net Total :%s", String.format("%1$" + 12 + "s", String.format("%.2f", discountedTotal)))));
                                             break discounts;
-                                        
+
+                                        case "n":
+                                            continue discountAmount;
+
+                                        case "c":
+                                            break discounts;
+
                                         default:
-                                            System.out.println("Invalid choice! Assumed NO!");
-                                            // TODO: 10/19/16 Start over from here! 
+                                            System.out.println("Invalid choice! Retry...");
                                     }
-                                    
                                 }
-                                break;
                             }
                             else
                                 System.out.println("Invalid discount rate! Try again!");
                         }
-                        break;
-
                     case "n":
                         break discounts;
 
@@ -129,17 +130,22 @@ public class ShoppingCart {
                         System.out.println("Invalid choice.");
                 }
             }
-            System.out.print("Cash?");
-            System.out.flush();
-            // TODO: 10/18/16 Input should be validated! 
-            Float cash = Float.parseFloat(keyboard.readLine());
-            if(cash < total){
-                System.out.println("Insufficient funds! You need to pay "+total+"LKR in cash!");
-                continue;
+            float cash, change;
+            while(true){
+                System.out.print("Cash?");
+                System.out.flush();
+                // TODO: 10/18/16 Input should be validated!
+                cash = Float.parseFloat(keyboard.readLine());
+                if(cash < total){
+                    System.out.println("Insufficient funds! You need to pay "+total+"LKR in cash!");
+                    continue;
+                }
+                change = cash - total;
+                break;
             }
-                float change = cash - total;
-            bill.append("\nCash: " + cash);
-            bill.append("\nChange: " + change);
+
+            bill.append("\nCash: ").append(String.format("%.2f", cash));
+            bill.append("\nChange: ").append(String.format("%.2f", change));
             countChange(change);
             System.out.println(bill.toString());
             success = true;

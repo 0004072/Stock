@@ -12,8 +12,13 @@ import java.util.*;
 
 public class Stock
 {
-    private Map<String, Map<StockItem, Float>> stock = new HashMap<>();
+    private Map<String, Map<StockItem, Float>> stock;
+    private int nextId;
 
+    public Stock(){
+        this.stock = new HashMap<>();
+        this.nextId = 1;
+    }
     /*public static void main( String[] args )
     {
         *//*Stock testStock = new Stock();
