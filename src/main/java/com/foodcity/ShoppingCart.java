@@ -53,6 +53,7 @@ public class ShoppingCart {
     /**
      * Generated the bill for a given cart.
      * @param keyboard a BufferedReader instance to handle the user inout capturing.
+     * @return true if the process completed successfully, false otherwise.
      * @throws IOException in case of an IOException is occurred.
      */
     public boolean generateBill(BufferedReader keyboard) throws IOException{
@@ -142,7 +143,6 @@ public class ShoppingCart {
             while(true){
                 System.out.print("Cash?");
                 System.out.flush();
-                // TODO: 10/18/16 Input should be validated!
                 String cashInput = keyboard.readLine();
                 if(!cashInput.matches("[\\d]+(\\.[\\d]{1,2})?")){
                     System.out.println("Invalid input! Check your input...");

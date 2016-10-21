@@ -1,7 +1,0 @@
-com/foodcity/Stock.class
-com/foodcity/ShoppingCart.class
-com/foodcity/FoodCityHome.class
-com/foodcity/PurchasedItem.class
-com/foodcity/ZeroStockLevelException.class
-com/foodcity/InsufficientQuantityException.class
-com/foodcity/StockItem.class

@@ -1,6 +1,7 @@
 package com.foodcity;
 
 /**
+ * Class that defines the blueprint of a stock item, in the system.
  * Created by 000407 on 10/17/16.
  */
 public class StockItem {
@@ -59,6 +60,12 @@ public class StockItem {
     }
 
     //Overrode equals method for comparison.
+
+    /**
+     * Overrides the public boolean equals(@Nullable Object obj) method in java.lang.Object class. Allows comparing two StockItem objects for their similarity in parameters. Two instances are considered equal if they are instances of StockItem class and they have similar values for all of their attributes.
+     * @param obj java.lang.Object instance that needs to be compared with this
+     * @return True, if they are equal as mentioned above, false otherwise.
+     */
     @Override
     public boolean equals(Object obj){
         if(!(obj instanceof StockItem))
@@ -70,6 +77,10 @@ public class StockItem {
         return equals;
     }
 
+    /**
+     * Overrides the public String toString() method in java.lang.Object, to display the content of the object instance.
+     * @return Returns a string representation of the object that includes its parameters and their values.
+     */
     @Override
     public String toString(){
         return String.format("Item info:\nID:%s\nName:%s\nUnit Price:%.2f per %s\n", this.getId(), this.getName(), this.getUnitPrice(), this.getUnit().equals(Unit.UNIT) ? "Unit" : this.getUnit().getUnitName());

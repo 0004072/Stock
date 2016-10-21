@@ -14,6 +14,7 @@ public class FoodCityHome {
 
         Map<String, ShoppingCart> shoppingCarts = new HashMap<>();
 
+        //Hard coded stock data. Reading the files/database could be implemented here.
         stock.addItem(new StockItem("Wheat Flour", "kg", 55.0f), 100.0f);
         stock.addItem(new StockItem("Sugar", "kg", 45.0f), 100.0f);
         stock.addItem(new StockItem("Milk Powder(400g)", "", 395.0f), 50.0f);

@@ -23,6 +23,13 @@ public class Stock
         this.stock = new HashMap<>();
         this.nextId = 1;
     }
+
+    public Stock(){
+        this.prefix = "T";
+        this.stock = new HashMap<>();
+        this.nextId = 1;
+    }
+
     /*public static void main( String[] args )
     {
         *//*Stock testStock = new Stock();
@@ -53,7 +60,7 @@ public class Stock
     }
 
     /**
-     * Interacts with the user to verify the overwriting of existing objects.
+     * Adds a new StockItem instance to the Stock instance. Interacts with the user to verify the overwriting of existing objects, if found any.
      * @param item StockItem instance need to be present in the stock
      * @param qty Quantity that should be available
      * @param keyboard java.io.BufferedReader instance that handles capturing user inputs.
@@ -76,7 +83,6 @@ public class Stock
         }
 
         if(itemAlreadyExists){
-            System.out.println(existingItem.getId());
             System.out.println("Item already exists!");
             System.out.println(String.format("%1$-"+20+"s", "Existing")+" "+String.format("%1$-"+20+"s", "New"));
             System.out.println(String.format("%1$-"+20+"s", existingItem.getName())+" "+String.format("%1$-"+20+"s", item.getName()));
@@ -87,6 +93,7 @@ public class Stock
             try {
                 String res = keyboard.readLine();
                 if(res.equals("y")){
+                    item.setId(existingItem.getId());
                     newEntry.put(item, qty);
                     this.stock.put(existingItem.getId(), newEntry);
                 }
@@ -98,7 +105,12 @@ public class Stock
             this.stock.putIfAbsent(item.getId(), newEntry);
     }
 
-    StockItem getItem(String id){
+    /**
+     * Retrieves the StockItem instance from the stock.
+     * @param id ID of the stock item needs to be retrieved.
+     * @return Returns the StockItem instance having the ID if found, null otherwise.
+     */
+    public StockItem getItem(String id){
         Map.Entry<StockItem, Float> stockItem = getStockItem(id);
 
         if(stockItem == null)
@@ -124,6 +136,7 @@ public class Stock
      * @return Returns a new PurchasedItem instance contains a StockItem instance and the requested quantity.
      * @throws ZeroStockLevelException if the requested StockItem is out of stock.
      * @throws InsufficientQuantityException if the requested quantity is lesser than the available quantity.
+     * @throws InvalidUnitException if the requested unit is not a multiple of the minimum allowed unit.
      */
     public PurchasedItem buyItem(String id, float qty) throws ZeroStockLevelException, InsufficientQuantityException, InvalidUnitException{
         Map.Entry<StockItem, Float> stockItem = getStockItem(id);
