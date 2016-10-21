@@ -62,6 +62,14 @@ public class ShoppingCart {
         bill.append("~Food City~\nOn your way home...");
         bill.append("\nNo. 221B, Baker Street, London.");
         bill.append("\n===RECEIPT===\n");
+
+        RowCell colSerNo = new RowCell(3, "-", "#");
+        RowCell colName = new RowCell(30, "-", "Name");
+        RowCell colUnitPrice = new RowCell(12, "-", "Unit Price");
+        RowCell colQty = new RowCell(7, "-", "Qty.");
+        RowCell colPrice = new RowCell(12, "-", "Price");
+        Table billTable = new Table(colSerNo, colName, colUnitPrice, colQty, colPrice);
+        
         bill.append("\n # ").append(String.format("%1$-" + 30 + "s", "Name")).append(String.format("%1$-" + 12 + "s", "Unit Price")).append(String.format("%1$-" + 7 + "s", "Qty.")).append(String.format("%1$-" + 12 + "s", "Price"));
         int i = 1;
         Float total = 0.0f;
@@ -73,9 +81,14 @@ public class ShoppingCart {
             float price = itm.getItem().getUnitPrice() * itm.getQty();
             total += price;
             String billPrice = String.format("%.2f", price);
+            
+            billTable.addRow(String.valueOf(i), name, unitPrice, String.format("%s%s", qty, unit), billPrice);
+
             bill.append("\n").append(String.format("%1$" + 3 + "s", (i + " "))).append(String.format("%1$-" + 30 + "s", name)).append(String.format("%1$" + 12 + "s", unitPrice)).append(String.format("%1$" + 7 + "s", (qty + "" + unit))).append(String.format("%1$" + 12 + "s", billPrice));
             i++;
         }
+
+        //System.out.println(billTable.tableToString());
 
         //Rounding of total
         float cents = total % 1;
@@ -86,10 +99,13 @@ public class ShoppingCart {
         else if(cents < 0.5f)
             total -= cents;
 
+        billTable.addRow("1", "1", "1", "1", String.format("%.2f", total));
+        billTable.mergeCells(billTable.getNumberOfRows()-1, 3, -3);
         String displayTot = String.format("%1$"+12+"s", String.format("%.2f", total));
         displayTot = "Sub Total :" + displayTot;
         bill.append("\n\n").append(String.format("%1$" + 64 + "s", displayTot));
-        while(true){
+        System.out.println(billTable.tableToString());
+        /*while(true){
             System.out.println(String.format("Total : %.2f", total));
             discounts:
             while(true){
@@ -163,7 +179,7 @@ public class ShoppingCart {
             System.out.println(bill.toString());
             success = true;
             break;
-        }
+        }*/
         return success;
     }
 
