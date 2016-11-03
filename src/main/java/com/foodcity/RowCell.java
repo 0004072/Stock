@@ -8,32 +8,38 @@ public class RowCell {
     private String alignment;
     private String cellContent;
     private int colspan;
+    private String type;
 
     public RowCell(int w, String a, String c){
         this.cellWidth = w;
         this.alignment = a;
-        this.cellContent = String.format("%1$" + this.alignment + this.cellWidth + "s", c);
-        this.colspan = 1;
+        this.cellContent = c;
+        this.colspan = 0;
+        this.type = "text";
     }
 
-    public void setCellContent(String text, String al){
-        this.cellContent = String.format("%1$" + this.alignment + this.cellWidth + "s", text);
+    public RowCell(String a, String c){
+        this.cellWidth = c.length();
+        this.alignment = a;
+        this.cellContent = c;
+        this.colspan = 0;
+        this.type = "text";
+    }
+
+    public RowCell(int w, String a, String c, String t){
+        this.cellWidth = w;
+        this.alignment = a;
+        this.cellContent = c;
+        this.colspan = 0;
+        this.type = t;
+    }
+
+    public void setCellContent(String text){
+        this.cellContent = text;
     }
 
     void setCellWidth(int newWidth){
         this.cellWidth = newWidth;
-        this.setCellContent(this.cellContent, this.getAlignment());
-    }
-
-    void setCellAlignment(String al){
-        if(al.matches("[-]") || (al.length() == 0)) {
-            this.alignment = al;
-            this.cellContent.trim();
-            this.setCellContent(this.cellContent, this.alignment);
-        }
-
-        else
-            System.out.println("Invalid alignment!");
     }
 
     int getCellWidth(){
@@ -48,11 +54,22 @@ public class RowCell {
         return this.cellContent;
     }
 
-    void setColspan(int c){
-        this.colspan = c;
-    }
-
     int getColspan(){
         return this.colspan;
+    }
+
+    int getAbsoluteColsSpan(){
+        if(colspan < 0)
+            return this.colspan * -1;
+
+        return this.colspan;
+    }
+
+    String getType(){
+        return this.type;
+    }
+
+    void setColspan(int c){
+        this.colspan = c;
     }
 }

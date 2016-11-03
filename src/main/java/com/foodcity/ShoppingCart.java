@@ -61,7 +61,7 @@ public class ShoppingCart {
         StringBuilder bill = new StringBuilder();
         bill.append("~Food City~\nOn your way home...");
         bill.append("\nNo. 221B, Baker Street, London.");
-        bill.append("\n===RECEIPT===\n");
+        bill.append("\n\n===RECEIPT===\n");
 
         RowCell colSerNo = new RowCell(3, "-", "#");
         RowCell colName = new RowCell(30, "-", "Name");
@@ -69,8 +69,8 @@ public class ShoppingCart {
         RowCell colQty = new RowCell(7, "-", "Qty.");
         RowCell colPrice = new RowCell(12, "-", "Price");
         Table billTable = new Table(colSerNo, colName, colUnitPrice, colQty, colPrice);
-        
-        bill.append("\n # ").append(String.format("%1$-" + 30 + "s", "Name")).append(String.format("%1$-" + 12 + "s", "Unit Price")).append(String.format("%1$-" + 7 + "s", "Qty.")).append(String.format("%1$-" + 12 + "s", "Price"));
+
+        billTable.addSectionBreak(1);
         int i = 1;
         Float total = 0.0f;
         for(PurchasedItem itm : cart){
@@ -81,14 +81,9 @@ public class ShoppingCart {
             float price = itm.getItem().getUnitPrice() * itm.getQty();
             total += price;
             String billPrice = String.format("%.2f", price);
-            
             billTable.addRow(String.valueOf(i), name, unitPrice, String.format("%s%s", qty, unit), billPrice);
-
-            bill.append("\n").append(String.format("%1$" + 3 + "s", (i + " "))).append(String.format("%1$-" + 30 + "s", name)).append(String.format("%1$" + 12 + "s", unitPrice)).append(String.format("%1$" + 7 + "s", (qty + "" + unit))).append(String.format("%1$" + 12 + "s", billPrice));
             i++;
         }
-
-        //System.out.println(billTable.tableToString());
 
         //Rounding of total
         float cents = total % 1;
@@ -99,13 +94,12 @@ public class ShoppingCart {
         else if(cents < 0.5f)
             total -= cents;
 
-        billTable.addRow("1", "1", "1", "1", String.format("%.2f", total));
+        billTable.addSectionBreak();
+        billTable.addRow("", "", "", "@align:right@Sub Total :", String.format("%.2f", total));
         billTable.mergeCells(billTable.getNumberOfRows()-1, 3, -3);
-        String displayTot = String.format("%1$"+12+"s", String.format("%.2f", total));
-        displayTot = "Sub Total :" + displayTot;
-        bill.append("\n\n").append(String.format("%1$" + 64 + "s", displayTot));
-        System.out.println(billTable.tableToString());
-        /*while(true){
+        billTable.addSectionBreak();
+
+        while(true){
             System.out.println(String.format("Total : %.2f", total));
             discounts:
             while(true){
@@ -129,8 +123,16 @@ public class ShoppingCart {
                                     switch (confirmDiscount) {
                                         case "y":
                                             total = discountedTotal;
-                                            bill.append("\n").append(String.format("%1$" + 64 + "s", String.format("Discount/Tax Rate :%s", String.format("%1$" + 12 + "s", String.format("%.0f%%", (rateAsFloat * 100))))));
-                                            bill.append("\n").append(String.format("%1$" + 64 + "s", String.format("Net Total :%s", String.format("%1$" + 12 + "s", String.format("%.2f", discountedTotal)))));
+
+                                            //Discount rate added to the billTable
+                                            billTable.addRow("", "", "", "@align:right@Discount Rate :", String.format("%.2f%%", (rateAsFloat * 100)));
+                                            billTable.mergeCells(billTable.getNumberOfRows()-1, 3, -3);
+                                            billTable.addSectionBreak();
+
+                                            //Discounted total added to the billTable
+                                            billTable.addRow("", "", "", "@align:right@Net Total :", String.format("%.2f", discountedTotal));
+                                            billTable.mergeCells(billTable.getNumberOfRows()-1, 3, -3);
+                                            billTable.addSectionBreak();
                                             break discounts;
 
                                         case "n":
@@ -173,13 +175,22 @@ public class ShoppingCart {
                 break;
             }
 
-            bill.append("\nCash: ").append(String.format("%.2f", cash));
-            bill.append("\nChange: ").append(String.format("%.2f", change));
+            //Cash Paid added to the billTable
+            billTable.addRow("", "", "", "@align:right@Cash :", String.format("%.2f", cash));
+            billTable.mergeCells(billTable.getNumberOfRows()-1, 3, -3);
+            billTable.addSectionBreak();
+
+            //Change amount added to the bill table
+            billTable.addRow("", "", "", "@align:right@Change :", String.format("%.2f", change));
+            billTable.mergeCells(billTable.getNumberOfRows()-1, 3, -3);
+            billTable.addSectionBreak();
+
             countChange(change);
+            bill.append("\n").append(billTable.tableToString());
             System.out.println(bill.toString());
             success = true;
             break;
-        }*/
+        }
         return success;
     }
 

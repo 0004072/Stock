@@ -169,12 +169,19 @@ public class Stock
      * Displays the existing stock status in a formatted, human readable manner.
      */
     public void viewCurrentStock(){
+        RowCell itemId = new RowCell("-", "Item ID");
+        RowCell itemName = new RowCell("-", "Item Name");
+        RowCell unitPrice = new RowCell("-", "Unit Price");
+        RowCell qty = new RowCell("-", "Available Quantity");
+        Table stockTable = new Table(itemId, itemName, unitPrice, qty);
+        stockTable.addSectionBreak();
         for (Map<StockItem, Float> itemEntry : stock.values()) {
             Map.Entry<StockItem, Float> item = itemEntry.entrySet().iterator().next();
             StockItem itemData = item.getKey();
-            // TODO: 10/18/16 Format this output to be a little more pleasant! :P 
-            System.out.println(itemData.getId() + " " + itemData.getName() + " " + itemData.getUnitPrice() + " " + item.getValue());
+            stockTable.addRow(String.valueOf(itemData.getId()), String.valueOf(itemData.getName()), String.valueOf(itemData.getUnitPrice()), String.valueOf(item.getValue()));
         }
+        stockTable.addSectionBreak();
+        System.out.println(stockTable.tableToString());
     }
 
     /**
